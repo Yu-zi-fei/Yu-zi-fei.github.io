@@ -445,6 +445,7 @@
         }
 
         function monthKey(date) { return (date || '').slice(0, 7); }
+
         function monthLabel(k) {
             const parts = (k || '').split('-');
             if (parts.length < 2) return k || '';
@@ -453,8 +454,8 @@
 
         function getFiltered() {
            const list = activeTag === '全部' ? entries : entries.filter(e => e.tag === activeTag);
-                    // 按照 date 属性从新到旧（倒序）排序
-             return list.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    // 从新到旧（倒序）排序：以 id 为依据，id 越大代表记录越新
+             return list.sort((a, b) => b.id - a.id);
       }
        
         function renderFilters() {
@@ -523,18 +524,20 @@
                 const k = monthKey(e.date) || '未注明日期';
                 (groups[k] = groups[k] || []).push(e);
             });
-            const keys = Object.keys(groups).sort();
+            const keys = Object.keys(groups).sort().reverse();
 
-            keys.forEach(k => {
-                const head = document.createElement('div');
-                head.className = 'month-head';
-                head.textContent = monthLabel(k);
-                timelineEl.appendChild(head);
+           keys.forEach(k => {
+            const head = document.createElement('div');
+            head.className = 'month-head';
+            head.textContent = monthLabel(k);
+            timelineEl.appendChild(head);
 
-                const grid = document.createElement('div');
-                grid.className = 'photo-grid';
-                groups[k].forEach(e => grid.appendChild(buildCard(e)));
-                timelineEl.appendChild(grid);
+            const grid = document.createElement('div');
+            grid.className = 'photo-grid';
+            // 显式按 id 倒序排序组内条目（id 越大代表记录越新）
+            const sortedGroup = groups[k].sort((a, b) => b.id - a.id);
+            sortedGroup.forEach(e => grid.appendChild(buildCard(e)));
+            timelineEl.appendChild(grid);
             });
 
             modalList = visibleEntries;
