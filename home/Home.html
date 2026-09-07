@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .background-image.active {
+            opacity: 1;
+        }
+
+        .search-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 20px;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            will-change: opacity;
+            position: relative;
+            z-index: 600;
+        }
+
+        .search-container.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .hover-trigger {
+            position: fixed;
+            top: 35%;
+            left: 10%;
+            width: 80%;
+            height: 30%;
+            z-index: 500;
+            pointer-events: auto;
+        }
+
+        .hover-corner {
+            position: fixed;
+            bottom: 0;
+            width: 150px;
+            height: 150px;
+            z-index: 1002;
+        }
+
+        .hover-corner.left {
+            left: 0;
+        }
+        .hover-corner.right {
+            right: 0;
+        }
+
+        .search-box {
+            width: 600px;
+            max-width: 90%;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .liquid-glass {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            box-shadow:
+                inset 0 0 2px rgba(255, 255, 255, 0.6),
+                0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+
+        .liquid-glass:focus-within {
+            border-color: rgba(255, 255, 255, 0.7);
+            box-shadow:
+                inset 0 0 2px rgba(255, 255, 255, 0.6),
+                0 0 0 3px rgba(0, 123, 255, 0.25),
+                0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .liquid-glass.no-bottom-radius {
+            border-radius: 25px 25px 0 0;
+        }
+
+        .search-input {
+            flex: 1;
+            height: 50px;
+            padding: 0 20px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #333;
+            transition: color 0.3s ease;
+        }
+
+        .engine-switch-shell {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            margin-right: 4px;
+            padding: 4px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow:
+                inset 0 0 2px rgba(255, 255, 255, 0.55),
+                0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .engine-switch {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 14px;
+            height: 38px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s ease;
+            min-width: 80px;
+            border-radius: 25px;
+        }
+
+        .engine-switch:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .engine-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-top: none;
+            border-radius: 0 0 25px 25px;
+            box-shadow:
+                inset 0 0 2px rgba(255, 255, 255, 0.6),
+                0 8px 32px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            text-align: left;
+            color: #333;
+            transition: color 0.3s ease;
+        }
+
+        .suggestion-item:hover {
+            background-color: rgba(136, 136, 136, 0.1);
+        }
+
+        .suggestion-item:last-child {
+            border-radius: 0 0 25px 25px;
+        }
+
+        .hover-corner .image-upload-btn {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            font-size: 30px;
+            box-shadow:
+                inset 0 0 2px rgba(255, 255, 255, 0.6),
+                0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease, visibility 0.3s ease, background 0.3s ease, transform 0.3s ease;
+            color: #cccccc;
+            opacity: 0;
+            visibility: hidden;
+            will-change: opacity;
+        }
+
+        .hover-corner.left:hover .image-upload-btn,
+        .hover-corner.left .image-upload-btn:hover {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .image-upload-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .hover-corner .add-shortcut-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            font-size: 30px;
+            box-shadow:
+                inset 0 0 2px rgba(255, 255, 255, 0.6),
+                0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease, visibility 0.3s ease, background 0.3s ease, transform 0.3s ease;
+            color: #cccccc;
+            opacity: 0;
+            visibility: hidden;
+            will-change: opacity;
+        }
+
+        .hover-corner.right:hover .add-shortcut-btn,
+        .hover-corner.right .add-shortcut-btn:hover {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .add-shortcut-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .shortcuts-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .shortcut-item {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow:
+                inset 0 0 2px rgba(255, 255, 255, 0.6),
+                0 8px 32px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .shortcut-item:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .shortcut-icon {
+            width: 28px;
+            height: 28px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-bottom: 4px;
+            border-radius: 4px;
+        }
+
+        .shortcut-title {
+            font-size: 8px;
+            text-align: center;
+            word-break: break-word;
+            padding: 0 3px;
+            line-height: 1.2;
+        }
+
+        .shortcuts-empty {
+            color: rgba(255, 255, 255, 0.7);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            font-size: 14px;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            box-shadow:
+                inset 0 0 2px rgba(255, 255, 255, 0.6),
+                0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s infinite;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            display: none;
+            animation: overlayFadeIn 0.15s ease;
+        }
+
+        @keyframes overlayFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-window {
+            width: 380px;
+            max-width: 90%;
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.08),
+                0 16px 48px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            animation: windowSlideIn 0.2s ease;
+        }
+
+        @keyframes windowSlideIn {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .modal-title {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .modal-close-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            transition: background 0.1s ease, color 0.1s ease;
+            flex-shrink: 0;
+        }
+
+        .modal-close-btn:hover {
+            background: #e81123;
+            color: #fff;
+        }
+
+        .modal-close-btn svg {
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+        }
+
+        .modal-body {
+            padding: 24px 24px 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            font-weight: 400;
+            color: #555;
+        }
+
+        .underline-input {
+            width: 100%;
+            padding: 6px 0;
+            border: none;
+            border-bottom: 1px solid #e0e0e0;
+            border-radius: 0;
+            font-size: 14px;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            color: #1a1a1a;
+            background: transparent;
+            outline: none;
+            transition: border-color 0.2s ease, border-width 0.2s ease;
+        }
+
+        .underline-input:focus {
+            border-bottom: 2px solid #0078d4;
+            padding-bottom: 5px;
+        }
+
+        .underline-input::placeholder {
+            color: #bbb;
+        }
+
+        .icon-upload-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 4px;
+        }
+
+        .icon-preview {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            border: 1px dashed #d0d0d0;
+            background: #f7f7f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+            transition: border-color 0.2s ease;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .icon-preview.has-icon {
+            border-color: #0078d4;
+            border-style: solid;
+        }
+
+        .icon-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .icon-upload-btn {
+            padding: 5px 16px;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+            transition: background 0.1s ease, border-color 0.1s ease;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        .icon-upload-btn:hover {
+            background: #f0f0f0;
+            border-color: #bbb;
+        }
+
+        .icon-clear-btn {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 13px;
+            color: #999;
+            transition: color 0.1s ease;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            display: none;
+        }
+
+        .icon-clear-btn:hover {
+            color: #e81123;
+        }
+
+        .icon-clear-btn.visible {
+            display: inline-block;
+        }
+
+        .icon-file-input {
+            display: none;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding: 16px 24px 20px;
+        }
+
+        .btn {
+            padding: 7px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            outline: none;
+            transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease;
+            min-width: 72px;
+            text-align: center;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #d0d0d0;
+            color: #333;
+        }
+
+        .btn-outline:hover {
+            background: #f5f5f5;
+            border-color: #bbb;
+        }
+
+        .btn-outline:active {
+            background: #e8e8e8;
+        }
+
+        .btn-solid {
+            background: #0078d4;
+            border: 1px solid #0078d4;
+            color: #fff;
+        }
+
+        .btn-solid:hover {
+            background: #106ebe;
+            border-color: #106ebe;
+        }
+
+        .btn-solid:active {
+            background: #005a9e;
+            border-color: #005a9e;
+        }
+
+        .btn-solid:disabled {
+            background: #c8c8c8;
+            border-color: #c8c8c8;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .dark-text {
+            color: #333 !important;
+        }
+
+        .light-text {
+            color: #ffffff !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .placeholder-light::placeholder {
+            color: rgba(255, 255, 255, 0.7) !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .placeholder-dark::placeholder {
+            color: rgba(51, 51, 51, 0.7) !important;
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.6;
+            }
+        }
+    </style>
+</head>
+<body>
+    <img id="bgImage" class="background-image" src="" alt="背景图片">
+
+    <div class="hover-trigger" id="hoverTrigger"></div>
+
+    <div class="search-container" id="searchContainer">
+        <div class="search-box">
+            <div class="liquid-glass">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索或输入网址..." autocomplete="off">
+                <div class="engine-switch-shell">
+                    <div class="engine-switch" id="engineSwitch" title="切换搜索引擎">
+                        <span class="engine-name" id="engineName">Bing</span>
+                    </div>
+                </div>
+            </div>
+            <div class="suggestions" id="suggestions"></div>
+        </div>
+
+        <div class="shortcuts-grid" id="shortcutsGrid"></div>
+    </div>
+
+    <input type="file" id="imageInput" class="file-input" accept="image/*">
+    <div class="hover-corner left" id="hoverTriggerBottomLeft">
+        <button class="image-upload-btn" id="imageUploadBtn">+</button>
+    </div>
+    <div class="hover-corner right" id="hoverTriggerBottomRight">
+        <button class="add-shortcut-btn" id="addShortcutBtn">+</button>
+    </div>
+
+    <!-- 添加快捷方式模态框 -->
+    <div class="modal-overlay" id="addShortcutModal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <span class="modal-title">添加快捷方式</span>
+                <button class="modal-close-btn" id="modalCloseBtn" title="关闭">
+                    <svg viewBox="0 0 10 10"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">名称</label>
+                    <input type="text" class="underline-input" id="siteName" placeholder="网站名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">网址</label>
+                    <input type="text" class="underline-input" id="siteUrl" placeholder="https://www.example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">自定义图标（可选）</label>
+                    <div class="icon-upload-area">
+                        <div class="icon-preview" id="iconPreview">
+                            <span>无图标</span>
+                        </div>
+                        <div>
+                            <button class="icon-upload-btn" id="iconUploadBtn">选择图片</button>
+                            <button class="icon-clear-btn" id="iconClearBtn">清除</button>
+                            <input type="file" class="icon-file-input" id="iconFileInput" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelBtn">取消</button>
+                <button class="btn btn-solid" id="saveBtn" disabled>完成</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===================== DOM 引用 =====================
+        const bgImage = document.getElementById('bgImage');
+        const searchInput = document.getElementById('searchInput');
+        const suggestionsDiv = document.getElementById('suggestions');
+        const imageInput = document.getElementById('imageInput');
+        const imageUploadBtn = document.getElementById('imageUploadBtn');
+        const addShortcutBtn = document.getElementById('addShortcutBtn');
+        const shortcutsGrid = document.getElementById('shortcutsGrid');
+        const addShortcutModal = document.getElementById('addShortcutModal');
+        const siteName = document.getElementById('siteName');
+        const siteUrl = document.getElementById('siteUrl');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const liquidGlass = document.querySelector('.liquid-glass');
+        const searchContainer = document.getElementById('searchContainer');
+        const hoverTrigger = document.getElementById('hoverTrigger');
+        const engineSwitch = document.getElementById('engineSwitch');
+        const engineNameEl = document.getElementById('engineName');
+
+        // 图标相关 DOM
+        const iconFileInput = document.getElementById('iconFileInput');
+        const iconUploadBtn = document.getElementById('iconUploadBtn');
+        const iconClearBtn = document.getElementById('iconClearBtn');
+        const iconPreview = document.getElementById('iconPreview');
+
+        // ===================== 数据 =====================
+        const mockSuggestions = [];
+        let shortcuts = [];
+        let currentEngine = localStorage.getItem('searchEngine') || 'bing';
+        let selectedIconData = null;
+
+        // ===================== 引擎切换 =====================
+        function updateEngineDisplay() {
+            engineNameEl.textContent = currentEngine === 'google' ? 'Google' : 'Bing';
+            localStorage.setItem('searchEngine', currentEngine);
+        }
+
+        engineSwitch.addEventListener('click', function() {
+            currentEngine = currentEngine === 'bing' ? 'google' : 'bing';
+            updateEngineDisplay();
+        });
+
+        // ===================== 背景图片 =====================
+        function getPixelBrightness(r, g, b) {
+            return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        }
+
+        function getImageAverageBrightness(imgElement, x, y, width, height) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = imgElement.width;
+            canvas.height = imgElement.height;
+            ctx.drawImage(imgElement, 0, 0);
+            const imageData = ctx.getImageData(x, y, width, height);
+            const data = imageData.data;
+            let totalBrightness = 0;
+            let pixelCount = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                totalBrightness += getPixelBrightness(r, g, b);
+                pixelCount++;
+            }
+            return totalBrightness / pixelCount;
+        }
+
+        function adjustTextColorBasedOnBackground() {
+            if (!bgImage.src || !bgImage.complete || bgImage.naturalWidth === 0) return;
+            const centerX = window.innerWidth / 2;
+            const centerY = (window.innerHeight / 2) - 100;
+            const scaleX = bgImage.naturalWidth / window.innerWidth;
+            const scaleY = bgImage.naturalHeight / window.innerHeight;
+            const sampleSize = 50;
+            const x = Math.max(0, Math.min(bgImage.naturalWidth - sampleSize, (centerX - sampleSize / 2) * scaleX));
+            const y = Math.max(0, Math.min(bgImage.naturalHeight - sampleSize, (centerY - sampleSize / 2) * scaleY));
+            const avgBrightness = getImageAverageBrightness(bgImage, x, y, sampleSize, sampleSize);
+
+            if (avgBrightness > 0.5) {
+                searchInput.classList.remove('light-text');
+                searchInput.classList.add('dark-text');
+                searchInput.classList.remove('placeholder-light');
+                searchInput.classList.add('placeholder-dark');
+                engineSwitch.classList.remove('light-text');
+                engineSwitch.classList.add('dark-text');
+            } else {
+                searchInput.classList.remove('dark-text');
+                searchInput.classList.add('light-text');
+                searchInput.classList.remove('placeholder-dark');
+                searchInput.classList.add('placeholder-light');
+                engineSwitch.classList.remove('dark-text');
+                engineSwitch.classList.add('light-text');
+            }
+        }
+
+        // ----- 壁纸上传：改用 WebP 格式 (质量 0.8) -----
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const MAX_SIZE = 1920;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    let width = img.width,
+                        height = img.height;
+                    if (width > height) {
+                        if (width > MAX_SIZE) { height = (height / width) * MAX_SIZE;
+                            width = MAX_SIZE; }
+                    } else {
+                        if (height > MAX_SIZE) { width = (width / height) * MAX_SIZE;
+                            height = MAX_SIZE; }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedDataUrl = canvas.toDataURL('image/webp', 0.8);
+                    try {
+                        localStorage.setItem('customBackground', compressedDataUrl);
+                        localStorage.setItem('customBackgroundName', file.name);
+                        bgImage.src = compressedDataUrl;
+                        bgImage.classList.add('active');
+                        bgImage.onload = adjustTextColorBasedOnBackground;
+                        bgImage.onerror = adjustTextColorBasedOnBackground;
+                    } catch (err) {
+                        if (err.name === 'QuotaExceededError') {
+                            alert('图片过大，请选择更小的图片（建议小于 2MB）');
+                        } else {
+                            alert('保存失败：' + err.message);
+                        }
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function loadSavedBackground() {
+            const savedBg = localStorage.getItem('customBackground');
+            if (savedBg) {
+                bgImage.src = savedBg;
+                bgImage.classList.add('active');
+                bgImage.onload = adjustTextColorBasedOnBackground;
+                bgImage.onerror = adjustTextColorBasedOnBackground;
+            }
+        }
+
+        // ===================== 快捷方式 =====================
+        function getDefaultIcon(name) {
+            const letter = name.charAt(0).toUpperCase();
+            const colors = ['#4285F4', '#EA4335', '#FBBC05', '#34A853', '#FF6D01', '#46BDC6', '#7B1FA2', '#C2185B'];
+            const colorIndex = letter.charCodeAt(0) % colors.length;
+            const color = colors[colorIndex];
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <rect width="100" height="100" rx="20" fill="${color}"/>
+                <text x="50" y="68" font-size="50" font-family="Arial, sans-serif" font-weight="bold" fill="white" text-anchor="middle">${letter}</text>
+            </svg>`;
+            return 'data:image/svg+xml,' + encodeURIComponent(svg);
+        }
+
+        function loadShortcuts() {
+            const savedShortcuts = localStorage.getItem('shortcuts');
+            if (savedShortcuts) {
+                shortcuts = JSON.parse(savedShortcuts);
+                let needsSave = false;
+                shortcuts.forEach(s => {
+                    if (!s.id) { s.id = Date.now() + Math.random();
+                        needsSave = true; }
+                });
+                if (needsSave) saveShortcuts();
+                renderShortcuts();
+            } else {
+                renderShortcuts();
+            }
+        }
+
+        function saveShortcuts() {
+            localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+        }
+
+        function renderShortcuts() {
+            shortcutsGrid.innerHTML = '';
+            if (shortcuts.length === 0) {
+                const emptyHint = document.createElement('div');
+                emptyHint.className = 'shortcuts-empty';
+                emptyHint.textContent = '点击右下角 + 按钮添加快捷方式';
+                shortcutsGrid.appendChild(emptyHint);
+                return;
+            }
+            const sortedShortcuts = [...shortcuts].sort((a, b) => a.order - b.order);
+            for (let i = 0; i < sortedShortcuts.length; i++) {
+                const shortcut = sortedShortcuts[i];
+                const shortcutEl = document.createElement('a');
+                shortcutEl.href = shortcut.url;
+                shortcutEl.target = '_blank';
+                shortcutEl.rel = 'noopener noreferrer';
+                shortcutEl.className = 'shortcut-item';
+
+                const iconEl = document.createElement('div');
+                iconEl.className = 'shortcut-icon loading';
+
+                if (shortcut.icon && shortcut.icon.startsWith('data:image')) {
+                    const tempImg = new Image();
+                    tempImg.onload = function() {
+                        iconEl.style.backgroundImage = `url("${shortcut.icon}")`;
+                        iconEl.classList.remove('loading');
+                    };
+                    tempImg.onerror = function() {
+                        loadFaviconOrFallback(shortcut, iconEl);
+                    };
+                    tempImg.src = shortcut.icon;
+                } else {
+                    loadFaviconOrFallback(shortcut, iconEl);
+                }
+
+                const titleEl = document.createElement('div');
+                titleEl.className = 'shortcut-title';
+                titleEl.textContent = shortcut.name;
+
+                shortcutEl.appendChild(iconEl);
+                shortcutEl.appendChild(titleEl);
+
+                shortcutEl.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // 修复：直接在这里调用删除逻辑，避免多次确认
+                    removeShortcut(shortcut.id, shortcut.name);
+                });
+
+                shortcutsGrid.appendChild(shortcutEl);
+            }
+        }
+
+        // 修复：采用国内高效公共 Favicon API，支持多级自动降级重试
+        function loadFaviconOrFallback(shortcut, iconEl) {
+            let domain;
+            try {
+                const urlObj = new URL(shortcut.url);
+                domain = urlObj.hostname;
+            } catch (e) {
+                domain = null;
+            }
+
+            if (!domain) {
+                iconEl.style.backgroundImage = `url("${getDefaultIcon(shortcut.name)}")`;
+                iconEl.classList.remove('loading');
+                return;
+            }
+
+            // 国内访问速度极佳且稳定的图标服务 API 链
+            const faviconSources = [
+                `https://api.iowen.cn/api/favicon?url=${domain}`,
+                `https://v1.v2ex.co/site/icon?url=${domain}`,
+                `https://api.uomg.com/api/get.favicon?url=${shortcut.url}`,
+                `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+            ];
+
+            let attempts = 0;
+
+            function tryNextSource() {
+                if (attempts < faviconSources.length) {
+                    const currentApi = faviconSources[attempts++];
+                    const tempImg = new Image();
+                    tempImg.onload = function() {
+                        iconEl.style.backgroundImage = `url("${currentApi}")`;
+                        iconEl.classList.remove('loading');
+                    };
+                    tempImg.onerror = function() {
+                        tryNextSource();
+                    };
+                    tempImg.src = currentApi;
+                } else {
+                    // 全部 API 请求失败，降级显示字母占位图标
+                    iconEl.style.backgroundImage = `url("${getDefaultIcon(shortcut.name)}")`;
+                    iconEl.classList.remove('loading');
+                }
+            }
+
+            tryNextSource();
+        }
+
+        // 修复：统一确认逻辑，避免双重 confirm 弹窗
+        function removeShortcut(id, name) {
+            const displayName = name ? `「${name}」` : '';
+            if (confirm(`确定要删除快捷方式${displayName}吗？`)) {
+                shortcuts = shortcuts.filter(s => s.id !== id);
+                saveShortcuts();
+                renderShortcuts();
+            }
+        }
+
+        // ===================== 自定义图标上传 =====================
+        function compressIcon(file) {
+            return new Promise((resolve, reject) => {
+                const MAX_ICON_SIZE = 128;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > height) {
+                            if (width > MAX_ICON_SIZE) { height = (height / width) * MAX_ICON_SIZE;
+                                width = MAX_ICON_SIZE; }
+                        } else {
+                            if (height > MAX_ICON_SIZE) { width = (width / height) * MAX_ICON_SIZE;
+                                height = MAX_ICON_SIZE; }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const dataUrl = canvas.toDataURL('image/webp', 0.6);
+                        resolve(dataUrl);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function updateIconPreview(dataUrl) {
+            if (dataUrl && dataUrl.startsWith('data:image')) {
+                iconPreview.innerHTML = `<img src="${dataUrl}" alt="图标预览">`;
+                iconPreview.classList.add('has-icon');
+                iconClearBtn.classList.add('visible');
+                selectedIconData = dataUrl;
+            } else {
+                iconPreview.innerHTML = '<span>无图标</span>';
+                iconPreview.classList.remove('has-icon');
+                iconClearBtn.classList.remove('visible');
+                selectedIconData = null;
+            }
+        }
+
+        iconUploadBtn.addEventListener('click', function() {
+            iconFileInput.click();
+        });
+
+        iconFileInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                const compressed = await compressIcon(file);
+                updateIconPreview(compressed);
+                updateSaveBtnState();
+            } catch (err) {
+                alert('图标处理失败：' + err.message);
+            }
+            iconFileInput.value = '';
+        });
+
+        iconClearBtn.addEventListener('click', function() {
+            updateIconPreview(null);
+            updateSaveBtnState();
+        });
+
+        // ===================== 模态框逻辑 =====================
+        function updateSaveBtnState() {
+            const name = siteName.value.trim();
+            const url = siteUrl.value.trim();
+            saveBtn.disabled = !(name && url);
+        }
+
+        function showAddShortcutModal() {
+            siteName.value = '';
+            siteUrl.value = '';
+            updateIconPreview(null);
+            saveBtn.disabled = true;
+            addShortcutModal.style.display = 'flex';
+            setTimeout(() => siteName.focus(), 100);
+        }
+
+        function hideAddShortcutModal() {
+            addShortcutModal.style.display = 'none';
+            updateIconPreview(null);
+        }
+
+        function addShortcut() {
+            const name = siteName.value.trim();
+            const url = siteUrl.value.trim();
+            if (!name || !url) {
+                alert('请填写名称和网址');
+                return;
+            }
+            try {
+                new URL(url);
+            } catch (e) {
+                alert('请输入有效的网址');
+                return;
+            }
+
+            shortcuts.push({
+                id: Date.now() + Math.random(),
+                name: name,
+                url: url,
+                icon: selectedIconData || '',
+                order: shortcuts.length
+            });
+
+            saveShortcuts();
+            renderShortcuts();
+            hideAddShortcutModal();
+        }
+
+        // ===================== 事件绑定 =====================
+        imageUploadBtn.addEventListener('click', function() {
+            imageInput.click();
+        });
+
+        addShortcutBtn.addEventListener('click', showAddShortcutModal);
+
+        saveBtn.addEventListener('click', addShortcut);
+
+        cancelBtn.addEventListener('click', hideAddShortcutModal);
+
+        document.getElementById('modalCloseBtn').addEventListener('click', hideAddShortcutModal);
+
+        siteName.addEventListener('input', updateSaveBtnState);
+        siteUrl.addEventListener('input', updateSaveBtnState);
+
+        addShortcutModal.addEventListener('click', function(e) {
+            if (e.target === addShortcutModal) {
+                hideAddShortcutModal();
+            }
+        });
+
+        // ===================== 搜索相关 =====================
+        function hideSuggestions() {
+            suggestionsDiv.style.display = 'none';
+            liquidGlass.classList.remove('no-bottom-radius');
+        }
+
+        function showSuggestions(value) {
+            suggestionsDiv.innerHTML = '';
+            if (value.trim() === '') { hideSuggestions(); return; }
+            const filteredSuggestions = mockSuggestions.filter(s => s.toLowerCase().includes(value.toLowerCase()));
+            if (filteredSuggestions.length > 0) {
+                filteredSuggestions.forEach(suggestion => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = suggestion;
+                    item.addEventListener('click', () => {
+                        searchInput.value = suggestion;
+                        hideSuggestions();
+                        performSearch(suggestion);
+                    });
+                    suggestionsDiv.appendChild(item);
+                });
+                suggestionsDiv.style.display = 'block';
+                liquidGlass.classList.add('no-bottom-radius');
+            } else {
+                hideSuggestions();
+            }
+        }
+
+        function performSearch(query) {
+            let url;
+            try {
+                if (query.startsWith('http://') || query.startsWith('https://')) {
+                    url = query;
+                } else if (/^[^\s]+\.[^\s]+$/.test(query)) {
+                    url = 'https://' + query;
+                } else {
+                    if (currentEngine === 'google') {
+                        url = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+                    } else {
+                        url = 'https://www.bing.com/search?q=' + encodeURIComponent(query);
+                    }
+                }
+                window.open(url, '_blank', 'noopener,noreferrer');
+            } catch (e) {
+                url = 'https://www.bing.com/search?q=' + encodeURIComponent(query);
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            showSuggestions(e.target.value);
+        });
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) {
+                    performSearch(query);
+                    hideSuggestions();
+                }
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-box')) {
+                hideSuggestions();
+            }
+        });
+
+        // ===================== 搜索栏显隐 =====================
+        let hideTimeout;
+
+        function showSearchContainer() {
+            searchContainer.classList.add('visible');
+            clearTimeout(hideTimeout);
+        }
+
+        function hideSearchContainer() {
+            if (searchInput.value.trim() !== '' || document.activeElement === searchInput) {
+                return;
+            }
+            hideTimeout = setTimeout(() => {
+                searchContainer.classList.remove('visible');
+            }, 300);
+        }
+
+        hoverTrigger.addEventListener('mouseenter', showSearchContainer);
+        searchContainer.addEventListener('mouseenter', showSearchContainer);
+        searchContainer.addEventListener('mouseleave', hideSearchContainer);
+        searchInput.addEventListener('focus', showSearchContainer);
+        searchInput.addEventListener('blur', () => {
+            setTimeout(hideSearchContainer, 100);
+        });
+
+        // ===================== 键盘快捷键 =====================
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (addShortcutModal.style.display === 'flex') {
+                    hideAddShortcutModal();
+                } else if (suggestionsDiv.style.display === 'block') {
+                    hideSuggestions();
+                }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+
+        window.addEventListener('resize', adjustTextColorBasedOnBackground);
+
+        // ===================== 初始化 =====================
+        window.addEventListener('load', function() {
+            loadSavedBackground();
+            loadShortcuts();
+            updateEngineDisplay();
+        });
+    </script>
+</body>
+</html>
