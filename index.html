@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>手账首屏 · 便签标题</title>
+    <title>--L-- · 世界的一角</title>
     <style>
         :root {
             color-scheme: light;
@@ -32,7 +32,7 @@
             --chip-active-bg: rgba(0, 113, 227, 0.94);
             --chip-active-text: #ffffff;
             --modal-bg: linear-gradient(to bottom right, #c8d8ec, #ffffff);
-            --modal-border: #ffffff;    
+            --modal-border: #ffffff;
         }
 
         /* ===== 深色模式 ===== */
@@ -381,7 +381,7 @@ html .modal-text-date, html.dark .modal-text-date { color: #77736b; }
 <style>
 /* 彩色手账的夜间配色 */
 html.dark { --text-primary:#f4e9d9; --text-secondary:#d7c8b8; --text-tertiary:#b5a89a; --panel-stroke:#6d625c; --card-stroke:#6d625c; --card-bg:#34302d; --chip-bg:#403a35; --chip-active-bg:#df8b70; --chip-active-text:#211b19; }
-html.dark body { background-color:#211e1c; background-image:radial-gradient(#554b44 1px, transparent 1px); color:var(--text-primary); }
+html.dark body { background-color:#211e1c; background-image:radial-gradient(#554b44 1.3px, transparent 1.3px); color:var(--text-primary); }
 html.dark .site-nav, html.dark .site-nav.is-scrolled { background:#302b28; border-color:#73665e; box-shadow:5px 5px 0 #151311; }
 html.dark .hero-copy { background:#543a35; border-color:#8d6c60; box-shadow:7px 7px 0 #151311; }
 html.dark .eyebrow { background:#554936; color:#f4e9d9; border-color:#8d7a5b; }
@@ -401,6 +401,34 @@ html.dark .footer { color:#b5a89a; }
 </style>
 <style>.site-nav-wrap{padding-top:12px}.site-nav{padding:9px 16px}.brand-mark{width:32px;height:32px;font-size:15px}.hero{padding:24px 0}.hero-copy,html.dark .hero-copy{background:transparent;border:0;box-shadow:none;padding:8px 4px;align-items:center}.hero-title{font-size:clamp(2rem,4vw,3.5rem);line-height:1.2}.eyebrow{margin-bottom:12px;padding:5px 10px}.hero-meta{min-width:120px}.stat-card{padding:10px 16px;transform:rotate(3deg);border-radius:8px}.stat-value{font-size:1.7rem}.stat-label{font-size:12px;margin-top:2px}@media(max-width:768px){.hero-copy{flex-direction:row;gap:14px}.hero-meta{width:auto;min-width:90px}.hero-title{font-size:clamp(1.5rem,6vw,2.4rem)}}</style>
 <style>html:not(.dark) .hero-copy, html.dark .hero-copy { background: transparent; }</style>
+<style>
+/* 亮色背景点纹更清晰；深色模式保持原样。 */
+html:not(.dark) body { background-image: radial-gradient(#c7a88e 1.7px, transparent 1.7px); }
+</style>
+<style>
+/* 全文滚动区延伸到屏幕边缘，内容仍保持卡片宽度 */
+html .modal-text, html.dark .modal-text {
+    width: 100vw; max-width: none; max-height: 80vh;
+    padding: 0; border: 0; border-radius: 0;
+    background: transparent; box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    overflow-y: auto;
+}
+.modal-text-paper {
+    width: min(720px, calc(100% - 48px)); margin: 0 auto;
+    padding: 28px 30px; border: 2px solid #30383a; border-radius: 16px;
+    background: #fff4d7; color: #30383a; box-shadow: 5px 5px 0 #30383a;
+    overflow-wrap: anywhere;
+}
+html.dark .modal-text-paper { background: #40372f; border-color: #8d7a69; color: #f4e9d9; box-shadow: 5px 5px 0 #151311; }
+.modal-nav { z-index: 2; }
+@media (max-width: 600px) { .modal-text-paper { width: calc(100% - 32px); padding: 22px 20px; } }
+</style>
+<style>
+/* 避免浏览时意外选中文字或图片 */
+body { -webkit-user-select: none; user-select: none; }
+img { -webkit-user-drag: none; }
+</style>
 </head>
 <body>
     <!-- 引入 entries.js（数据文件） -->
@@ -487,6 +515,10 @@ html.dark .footer { color:#b5a89a; }
 
     <script>
 
+        document.addEventListener('dragstart', (event) => {
+            if (event.target instanceof HTMLImageElement) event.preventDefault();
+        });
+
         const timelineEl = document.getElementById('timeline');
         const filterBar = document.getElementById('filterBar');
         const emptyState = document.getElementById('emptyState');
@@ -529,7 +561,7 @@ html.dark .footer { color:#b5a89a; }
                     // 从新到旧（倒序）排序：以 id 为依据，id 越大代表记录越新
              return list.slice().sort((a, b) => b.id - a.id);
       }
-       
+
         function renderFilters() {
             const tags = ['全部'].concat(Array.from(new Set(entries.map(e => e.tag).filter(Boolean))));
             filterBar.innerHTML = '';
@@ -654,7 +686,8 @@ html.dark .footer { color:#b5a89a; }
             } else {
                 modalImg.style.display = 'none';
                 modalText.style.display = '';
-                modalText.innerHTML = '<span class="modal-text-date">' + esc(e.date) + '</span>' + fmt(e.text);
+                modalText.innerHTML = '<div class="modal-text-paper"><span class="modal-text-date">' + esc(e.date) + '</span>' + fmt(e.text) + '</div>';
+                modalText.scrollTop = 0;
                 modalCaption.textContent = e.type === 'quote' ? '语录全文' : '日记全文';
             }
             modal.classList.add('active');
@@ -681,6 +714,7 @@ html.dark .footer { color:#b5a89a; }
             setTimeout(() => { modalImg.src = ''; }, 300);
         }
 
+        modalText.addEventListener('click', (e) => { if (e.target === modalText) closeModal(); });
         modalClose.addEventListener('click', closeModal);
         modalPrev.addEventListener('click', (e) => { e.stopPropagation(); navModal(-1); });
         modalNext.addEventListener('click', (e) => { e.stopPropagation(); navModal(1); });
@@ -718,7 +752,7 @@ html.dark .footer { color:#b5a89a; }
         // 初始化
         renderFilters();
         renderTimeline();
-      
+
       const modalOverlay = document.querySelector('.modal-overlay');
       let touchStartX = 0;
       let touchEndX = 0;
