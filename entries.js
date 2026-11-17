@@ -182,7 +182,7 @@ const entries = [
         url: "https://cdn.jsdelivr.net/gh/Yu-zi-fei/Yu-zi-fei.github.io/images/1788275409044.webp",
         date: "2026-09-01 ",
         tag: "Daily"
-    }
+    },
         {
         id: 20,
         type: "photo",
