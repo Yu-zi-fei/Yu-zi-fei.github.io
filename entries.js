@@ -183,4 +183,46 @@ const entries = [
         date: "2026-09-01 ",
         tag: "Daily"
     }
+        {
+        id: 20,
+        type: "photo",
+        url: "https://cdn.jsdelivr.net/gh/Yu-zi-fei/Yu-zi-fei.github.io@main/images/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20261117212217_29_252.jpg",
+        date: "2026-10-12 澳门｜澳门街巷里，欧式建筑与老旧居民楼交错相映",
+        tag: "Daily"
+    },
+    {
+        id: 21,
+        type: "photo",
+        url: "https://cdn.jsdelivr.net/gh/Yu-zi-fei/Yu-zi-fei.github.io@main/images/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20261117212217_30_252.jpg",
+        date: "2026-10-14 表情包｜左脑没有正确的想法，右脑也没有剩下什么",
+        tag: "Daily"
+    },
+    {
+        id: 22,
+        type: "photo",
+        url: "https://cdn.jsdelivr.net/gh/Yu-zi-fei/Yu-zi-fei.github.io@main/images/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20261117212217_31_252.jpg",
+        date: "2026-10-09 罗小黑｜罗小黑静静待在桌面上，陪伴平凡的日常",
+        tag: "Daily"
+    },
+    {
+        id: 23,
+        type: "photo",
+        url: "https://cdn.jsdelivr.net/gh/Yu-zi-fei/Yu-zi-fei.github.io@main/images/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20261117212217_32_252.jpg",
+        date: "2026-11-04 生日｜点亮生日蜡烛，为别人的生日留下温暖记忆",
+        tag: "Daily"
+    },
+    {
+        id: 24,
+        type: "photo",
+        url: "https://cdn.jsdelivr.net/gh/Yu-zi-fei/Yu-zi-fei.github.io@main/images/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20261117212217_33_252.jpg",
+        date: "2026-09-07 湖畔｜夕阳下的摩天轮很美，只可惜缺少同行的人",
+        tag: "Daily"
+    },
+    {
+        id: 25,
+        type: "photo",
+        url: "https://cdn.jsdelivr.net/gh/Yu-zi-fei/Yu-zi-fei.github.io@main/images/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20261117212217_34_252.jpg",
+        date: "2026-11-17 嘿咻｜嘿咻静静待在身边，成为一个小小的陪伴",
+        tag: "Daily"
+    }
 ];
